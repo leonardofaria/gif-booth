@@ -1,58 +1,58 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import download from 'downloadjs';
-import { Link } from 'react-router-dom';
-import './Create.css';
-import Webcam from '../../components/WebcamCapture';
-import Countdown from '../../components/Countdown';
-import Page from '../../components/Page';
-import Icon from '../../components/Icon';
-import Button from '../../components/Button';
-import GenericWarning from './GenericWarning';
-import BrowserWarning from './BrowserWarning';
+import React, { useEffect, useState, useCallback } from 'react'
+import download from 'downloadjs'
+import { Link } from 'react-router-dom'
+import './Create.css'
+import Webcam from '../../components/WebcamCapture'
+import Countdown from '../../components/Countdown'
+import Page from '../../components/Page'
+import Icon from '../../components/Icon'
+import Button from '../../components/Button'
+import GenericWarning from './GenericWarning'
+import BrowserWarning from './BrowserWarning'
 
-const WARNING_BROWSER = 'warning_browser';
-const WARNING_GENERIC = 'warning_generic';
+const WARNING_BROWSER = 'warning_browser'
+const WARNING_GENERIC = 'warning_generic'
 
-const PHASE_START = 'phase_start';
-const PHASE_COUNTDOWN = 'phase_countdown';
-const PHASE_RECORDING = 'phase_recording';
-const PHASE_TEXT = 'phase_text';
-const PHASE_END = 'phase_end';
+const PHASE_START = 'phase_start'
+const PHASE_COUNTDOWN = 'phase_countdown'
+const PHASE_RECORDING = 'phase_recording'
+const PHASE_TEXT = 'phase_text'
+const PHASE_END = 'phase_end'
 
 function Create({ history }) {
-  const [phase, setPhase] = useState(PHASE_START);
-  const [videoId, setVideoId] = useState();
-  const [isWebcamReady, setIsWebcamReady] = useState(false);
-  const [imageUrl, setImageUrl] = useState();
-  const [text, setText] = useState('');
-  const [isUploading, setUploading] = useState(false);
+  const [phase, setPhase] = useState(PHASE_START)
+  const [videoId, setVideoId] = useState()
+  const [isWebcamReady, setIsWebcamReady] = useState(false)
+  const [imageUrl, setImageUrl] = useState()
+  const [text, setText] = useState('')
+  const [isUploading, setUploading] = useState(false)
   const [warning, setWarning] = useState(
     window.MediaRecorder ? false : WARNING_BROWSER,
-  );
+  )
 
   const retry = () => {
-    setVideoId(null);
-    setImageUrl(null);
-    setText('');
-    setPhase(PHASE_START);
-    setWarning(false);
-  };
+    setVideoId(null)
+    setImageUrl(null)
+    setText('')
+    setPhase(PHASE_START)
+    setWarning(false)
+  }
 
   const onError = useCallback(
     (error) => {
-      console.error('Error:', error);
-      setWarning(WARNING_GENERIC);
+      console.error('Error:', error)
+      setWarning(WARNING_GENERIC)
     },
     [setWarning],
-  );
+  )
 
   const createGIF = useCallback(
     (callback) => {
-      const formData = new FormData();
-      const fontsize = text.length && 340 / text.length;
-      formData.append('text', text);
-      formData.append('fontsize', fontsize);
-      formData.append('videoId', videoId);
+      const formData = new FormData()
+      const fontsize = text.length && 340 / text.length
+      formData.append('text', text)
+      formData.append('fontsize', fontsize)
+      formData.append('videoId', videoId)
       fetch('/video2gif', {
         method: 'POST',
         body: formData,
@@ -60,23 +60,23 @@ function Create({ history }) {
         .then((res) => res.json())
         .then((response) => {
           if (!Object.keys(response).length) {
-            throw Error;
+            throw Error
           }
-          setImageUrl(response.videoId);
-          if (callback) callback();
+          setImageUrl(response.videoId)
+          if (callback) callback()
         })
-        .catch(onError);
+        .catch(onError)
     },
     [setImageUrl, onError, text, videoId],
-  );
+  )
 
   useEffect(() => {
-    if (!videoId) return;
-    createGIF();
-  }, [videoId, createGIF]);
+    if (!videoId) return
+    createGIF()
+  }, [videoId, createGIF])
 
   const upload = () => {
-    setUploading(true);
+    setUploading(true)
     fetch('/uploadGIF', {
       method: 'POST',
       body: JSON.stringify({ filename: imageUrl }),
@@ -85,13 +85,13 @@ function Create({ history }) {
       },
     })
       .then(() => history.push('/home'))
-      .catch(onError);
-  };
+      .catch(onError)
+  }
 
   const onStopCapture = (blob) => {
-    if (!blob) return;
-    const formData = new FormData();
-    formData.append('video', blob);
+    if (!blob) return
+    const formData = new FormData()
+    formData.append('video', blob)
     fetch('/uploadBlob', {
       method: 'POST',
       body: formData,
@@ -99,20 +99,20 @@ function Create({ history }) {
       .then((res) => res.ok && res.json())
       .then((response) => {
         if (!response) {
-          throw Error;
+          throw Error
         }
-        const { filename } = response;
-        const _videoId = filename.replace('.webm', '');
-        setVideoId(_videoId);
+        const { filename } = response
+        const _videoId = filename.replace('.webm', '')
+        setVideoId(_videoId)
       })
-      .catch(onError);
-  };
+      .catch(onError)
+  }
 
   const downloadGif = async () => {
-    const res = await fetch(`/download?filename=${imageUrl}`);
-    const fileBlob = await res.blob();
-    download(fileBlob, `${imageUrl}.gif`);
-  };
+    const res = await fetch(`/download?filename=${imageUrl}`)
+    const fileBlob = await res.blob()
+    download(fileBlob, `${imageUrl}.gif`)
+  }
 
   const header = (
     <>
@@ -122,16 +122,15 @@ function Create({ history }) {
         <Icon name="close" />
       </Link>
     </>
-  );
+  )
 
-  const isPrerecordingPhase = [PHASE_START, PHASE_COUNTDOWN].includes(phase);
-  const isPostRecordingPhase =
-    !isPrerecordingPhase && phase !== PHASE_RECORDING;
+  const isPrerecordingPhase = [PHASE_START, PHASE_COUNTDOWN].includes(phase)
+  const isPostRecordingPhase = !isPrerecordingPhase && phase !== PHASE_RECORDING
 
   const warningMap = {
     [WARNING_GENERIC]: <GenericWarning retry={retry} />,
     [WARNING_BROWSER]: <BrowserWarning />,
-  };
+  }
 
   return (
     <Page
@@ -233,7 +232,7 @@ function Create({ history }) {
         </div>
       )}
     </Page>
-  );
+  )
 }
 
-export default Create;
+export default Create
