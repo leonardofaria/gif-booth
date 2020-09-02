@@ -55,7 +55,7 @@ const createLayout = (imgs) => {
         img,
       };
 
-      left = left + imgWidth;
+      left += imgWidth;
 
       return imgSpecs;
     });
@@ -68,7 +68,7 @@ const createLayout = (imgs) => {
       imgs: rowMap,
     };
 
-    top = top + imgHeight;
+    top += imgHeight;
 
     return rowSpecs;
   });
@@ -103,7 +103,7 @@ const createGroupPhoto = async (urls) => {
 
   const inputs = await Promise.all(
     imgMap.map(async (row) => {
-      const inputs = await Promise.all(
+      const rowInputs = await Promise.all(
         row.imgs.map(async (img) => {
           const loaded = await sharp(img.img.data);
           const input = await loaded
@@ -117,7 +117,7 @@ const createGroupPhoto = async (urls) => {
             top: img.top,
             left: img.left,
           };
-        })
+        }),
       );
 
       const rowInput = await sharp({
@@ -128,7 +128,7 @@ const createGroupPhoto = async (urls) => {
           channels: 3,
         },
       })
-        .composite(inputs)
+        .composite(rowInputs)
         .raw()
         .toBuffer();
 
@@ -138,7 +138,7 @@ const createGroupPhoto = async (urls) => {
         top: row.top + padding,
         left: row.left + padding,
       };
-    })
+    }),
   );
 
   const groupPhoto = await sharp({
@@ -185,6 +185,7 @@ const createGroupPhotoStream = async (urls) => {
     return fs.createReadStream('./temp/group-photo.png');
   } catch (e) {
     console.log(e);
+    return null;
   }
 };
 

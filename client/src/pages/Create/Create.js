@@ -27,7 +27,7 @@ function Create({ history }) {
   const [text, setText] = useState('');
   const [isUploading, setUploading] = useState(false);
   const [warning, setWarning] = useState(
-    !!window.MediaRecorder ? false : WARNING_BROWSER
+    window.MediaRecorder ? false : WARNING_BROWSER,
   );
 
   const retry = () => {
@@ -43,12 +43,12 @@ function Create({ history }) {
       console.error('Error:', error);
       setWarning(WARNING_GENERIC);
     },
-    [setWarning]
+    [setWarning],
   );
 
   const createGIF = useCallback(
     (callback) => {
-      let formData = new FormData();
+      const formData = new FormData();
       const fontsize = text.length && 340 / text.length;
       formData.append('text', text);
       formData.append('fontsize', fontsize);
@@ -67,7 +67,7 @@ function Create({ history }) {
         })
         .catch(onError);
     },
-    [setImageUrl, onError, text, videoId]
+    [setImageUrl, onError, text, videoId],
   );
 
   useEffect(() => {
@@ -90,7 +90,7 @@ function Create({ history }) {
 
   const onStopCapture = (blob) => {
     if (!blob) return;
-    let formData = new FormData();
+    const formData = new FormData();
     formData.append('video', blob);
     fetch('/uploadBlob', {
       method: 'POST',
@@ -102,8 +102,8 @@ function Create({ history }) {
           throw Error;
         }
         const { filename } = response;
-        const videoId = filename.replace('.webm', '');
-        setVideoId(videoId);
+        const _videoId = filename.replace('.webm', '');
+        setVideoId(_videoId);
       })
       .catch(onError);
   };
@@ -167,11 +167,7 @@ function Create({ history }) {
             />
           )}
           {phase === PHASE_RECORDING && (
-            <Countdown
-              isPlaying={true}
-              onFinish={() => setPhase(PHASE_TEXT)}
-              danger
-            />
+            <Countdown isPlaying onFinish={() => setPhase(PHASE_TEXT)} danger />
           )}
           {!isPostRecordingPhase && (
             <Button
